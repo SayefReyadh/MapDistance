@@ -15,7 +15,7 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.example.sayefreyadh.mapdistance.MapsActivity" />
+        tools:context="com.example.sayefreyadh.mapdistance.System.MapsActivity" />
 
 
     <LinearLayout
@@ -25,10 +25,11 @@
         android:orientation="vertical">
 
         <AutoCompleteTextView
-            android:id="@+id/start"
+            android:id="@+id/startingLocationAutoCompleteTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
+            android:text="Dhaka"
             android:background="@android:color/transparent"
             android:hint="Choose a starting point..." />
 
@@ -41,10 +42,11 @@
             android:background="@drawable/dotted" />
 
         <AutoCompleteTextView
-            android:id="@+id/destination"
+            android:id="@+id/endingLocationAutoCompleteTextView"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
+            android:text="Khulna"
             android:hint="Choose a destination..." />
 
         <LinearLayout
@@ -52,6 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <Button
+                android:id="@+id/calculateButton"
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -59,13 +62,13 @@
                 />
 
             <TextView
-
+                android:id="@+id/distanceTextView"
                 android:layout_weight="1"
                 android:text="@string/app_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <TextView
-
+                android:id="@+id/timeTextView"
                 android:layout_weight="1"
                 android:text="@string/app_name"
                 android:layout_width="wrap_content"
