@@ -3,15 +3,16 @@ package com.example.sayefreyadh.mapdistance.System;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sayefreyadh.mapdistance.IDistanceCalculatedListener;
 import com.example.sayefreyadh.mapdistance.Models.MapDirection;
 import com.example.sayefreyadh.mapdistance.Models.Route;
 import com.example.sayefreyadh.mapdistance.R;
@@ -19,6 +20,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -26,7 +28,8 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
-public class MapsActivityTest extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivityTest extends FragmentActivity implements OnMapReadyCallback,
+        IDistanceCalculatedListener {
 
     private GoogleMap mMap;
     private AutoCompleteTextView startingLocationAutoCompleteTextView;
@@ -77,9 +80,9 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
 
         try {
 
-            MapDirection mapDirection = new MapDirection(startingLocationString , endingLocationString);
+            MapDirection mapDirection = new MapDirection(startingLocationString, endingLocationString, this);
             mapDirection.execute();
-            showPath(mapDirection.getRoutesBetweenPlace());
+//            showPath(mapDirection.getRoutesBetweenPlace());
             //onDirectionFinderStart();
             ///Direction direction = new Direction(this, startingLocationString, endingLocationString);
             ///direction.execute();
@@ -94,6 +97,13 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
 
     public void showPath(ArrayList<Route> routes)
     {
+//        if map is not ready or map is not initialized then do nothing, otherwise mMap will throw null exception
+        if (mMap == null)
+            return;
+
+//        removing all markers
+        mMap.clear();
+
         for(Route route : routes)
         {
             distanceTextView.setText(route.distance.text);
@@ -106,13 +116,38 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
 
             ///the problem seems to be here while updating the map the app crashes
             /// sayef last checked 19 - 8 - 17 2 : 40 PM
+
+            /****************
+
+             Shaafi-20-08-2017
+             the map was crashing because the locations was being fetched in a async task,
+             which takes time and is done in background, but the main UI is working instantly
+             and looking for data which is not present at the time. So it gets a null.
+
+             Rigth now the show map method is being called through a interface, as when the data
+             is received through the async task, it then calls the interface function and the function
+             then calls show map with the data that has been received from google json data
+
+             ***************/
+
             for(LatLng l : latlng)
             {
                 op.add(l);
             }
 
             mMap.addPolyline(op);
+
+            mMap.addMarker(new MarkerOptions().position(latlng.get(0)).title("source position")
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng.get(0), 12f));
+
+
+            mMap.addMarker(new MarkerOptions().position(latlng.get(latlng.size() - 1)).title("destination position")
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng.get(latlng.size() - 1), 13f));
         }
+
+
     }
     /**
      * Manipulates the map once available.
@@ -130,7 +165,9 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(23.693800, 90.455241);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Sayef"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney, 12f));
+
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -152,5 +189,10 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
             op.add(l);
         }
         mMap.addPolyline(op);
+    }
+
+    @Override
+    public void setLocationInMap(ArrayList<Route> routesBetweenPlace) {
+        showPath(routesBetweenPlace);
     }
 }

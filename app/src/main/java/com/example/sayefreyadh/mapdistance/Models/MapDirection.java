@@ -2,6 +2,7 @@ package com.example.sayefreyadh.mapdistance.Models;
 
 import android.os.AsyncTask;
 
+import com.example.sayefreyadh.mapdistance.IDistanceCalculatedListener;
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -17,7 +18,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by SayefReyadh on 8/19/2017.
@@ -28,13 +28,17 @@ public class MapDirection {
     private static final String DIRECTION_URL_API = "https://maps.googleapis.com/maps/api/directions/json?";
     private static final String GOOGLE_API_KEY = "AIzaSyBv_ysNgct58W5bvgL1QNIr3KVzotYPGMA";
 
+    //    interface
+    private IDistanceCalculatedListener mListerner;
 
     private String startingLocationString;
     private String endingLocationString;
     private ArrayList<Route> routesBetweenPlace;
-    public MapDirection(String startingLocationString, String endingLocationString) {
+
+    public MapDirection(String startingLocationString, String endingLocationString, IDistanceCalculatedListener mListerner) {
         this.startingLocationString = startingLocationString;
         this.endingLocationString = endingLocationString;
+        this.mListerner = mListerner;
     }
 
     private String createUrl() throws UnsupportedEncodingException {
@@ -61,56 +65,6 @@ public class MapDirection {
     public void setRoutesBetweenPlace(ArrayList<Route> routesBetweenPlace) {
         this.routesBetweenPlace = routesBetweenPlace;
     }
-
-    private class DownloadJSONData extends AsyncTask<String , Void , String> {
-
-        private String jsonData;
-
-        public String getJsonData() {
-            return jsonData;
-        }
-
-        public void setJsonData(String jsonData) {
-            this.jsonData = jsonData;
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            String link = params[0];
-            System.out.println("JSON " + link);
-            try{
-                URL url = new URL(link);
-                InputStream is = url.openConnection().getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
-                }
-                System.out.println("JSON" + buffer.toString());
-                return buffer.toString();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String res) {
-            try {
-                setJsonData(res);
-                parseJSon(res);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
 
     private void parseJSon(String data) throws JSONException{
         if (data == null)
@@ -156,6 +110,10 @@ public class MapDirection {
         setRoutesBetweenPlace(routes);
         //this.routesBetweenPlace = routes;
 
+
+//       informing the listener about the route
+        mListerner.setLocationInMap(getRoutesBetweenPlace());
+
     }
 
     private ArrayList<LatLng> decodePolyLine(final String poly) {
@@ -193,6 +151,55 @@ public class MapDirection {
         }
 
         return decoded;
+    }
+
+    private class DownloadJSONData extends AsyncTask<String, Void, String> {
+
+        private String jsonData;
+
+        public String getJsonData() {
+            return jsonData;
+        }
+
+        public void setJsonData(String jsonData) {
+            this.jsonData = jsonData;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            String link = params[0];
+            System.out.println("JSON " + link);
+            try {
+                URL url = new URL(link);
+                InputStream is = url.openConnection().getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line + "\n");
+                }
+                System.out.println("JSON" + buffer.toString());
+                return buffer.toString();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String res) {
+            try {
+                setJsonData(res);
+                parseJSon(res);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
 }
