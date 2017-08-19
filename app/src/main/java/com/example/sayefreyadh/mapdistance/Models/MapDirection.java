@@ -1,6 +1,5 @@
 package com.example.sayefreyadh.mapdistance.Models;
 
-import android.content.Context;
 import android.os.AsyncTask;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -21,23 +20,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by SayefReyadh on 8/17/2017.
+ * Created by SayefReyadh on 8/19/2017.
  */
 
-public class Direction {
+public class MapDirection {
 
     private static final String DIRECTION_URL_API = "https://maps.googleapis.com/maps/api/directions/json?";
     private static final String GOOGLE_API_KEY = "AIzaSyBv_ysNgct58W5bvgL1QNIr3KVzotYPGMA";
 
-    private Context context;
+
     private String startingLocationString;
     private String endingLocationString;
-    private List<Route> routesBetweenPlace;// = new ArrayList<Route>();
-
-    public Direction(Context context, String startingLocationString, String endingLocationString) {
-        this.context = context;
+    private ArrayList<Route> routesBetweenPlace;
+    public MapDirection(String startingLocationString, String endingLocationString) {
         this.startingLocationString = startingLocationString;
         this.endingLocationString = endingLocationString;
+    }
+
+    private String createUrl() throws UnsupportedEncodingException {
+        String urlStartingLocationString = URLEncoder.encode(startingLocationString, "utf-8");
+        String urlEndingLocationString = URLEncoder.encode(endingLocationString, "utf-8");
+
+        return DIRECTION_URL_API + "origin=" + urlStartingLocationString + "&destination=" + urlEndingLocationString + "&key=" + GOOGLE_API_KEY;
     }
 
     public void execute() throws UnsupportedEncodingException {
@@ -50,24 +54,15 @@ public class Direction {
 
     }
 
-
-    private String createUrl() throws UnsupportedEncodingException {
-        String urlStartingLocationString = URLEncoder.encode(startingLocationString, "utf-8");
-        String urlEndingLocationString = URLEncoder.encode(endingLocationString, "utf-8");
-
-        return DIRECTION_URL_API + "origin=" + urlStartingLocationString + "&destination=" + urlEndingLocationString + "&key=" + GOOGLE_API_KEY;
-    }
-
-
-    public List<Route> getRoutesBetweenPlace() {
+    public ArrayList<Route> getRoutesBetweenPlace() {
         return routesBetweenPlace;
     }
 
-    public void setRoutesBetweenPlace(List<Route> routesBetweenPlace) {
+    public void setRoutesBetweenPlace(ArrayList<Route> routesBetweenPlace) {
         this.routesBetweenPlace = routesBetweenPlace;
     }
 
-    private class DownloadJSONData extends AsyncTask<String , Void , String>{
+    private class DownloadJSONData extends AsyncTask<String , Void , String> {
 
         private String jsonData;
 
@@ -97,20 +92,17 @@ public class Direction {
                 System.out.println("JSON" + buffer.toString());
                 return buffer.toString();
             } catch (MalformedURLException e) {
-                System.out.println("EXCEPTION1 " + e.toString());
                 e.printStackTrace();
             } catch (IOException e) {
-                System.out.println("EXCEPTION2 " + e.toString());
                 e.printStackTrace();
             }
-            System.out.println("RETURNING NULL");
             return null;
         }
 
         @Override
         protected void onPostExecute(String res) {
             try {
-                this.jsonData = res;
+                setJsonData(res);
                 parseJSon(res);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -124,7 +116,7 @@ public class Direction {
         if (data == null)
             return;
 
-        List<Route> routes = new ArrayList<Route>();
+        ArrayList<Route> routes = new ArrayList<>();
         JSONObject jsonData = new JSONObject(data);
         JSONArray jsonRoutes = jsonData.getJSONArray("routes");
         for (int i = 0; i < jsonRoutes.length(); i++) {
@@ -149,6 +141,18 @@ public class Direction {
 
             routes.add(route);
         }
+
+        for(Route r : routes)
+        {
+            r.printDetails();
+            System.out.println("LATLNG POINTS");
+            for (LatLng l : r.points)
+            {
+                System.out.println(l.latitude + " " + l.longitude);
+            }
+
+        }
+
         setRoutesBetweenPlace(routes);
         //this.routesBetweenPlace = routes;
 

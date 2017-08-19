@@ -32,6 +32,11 @@
         <activity
             android:name=".System.MapsActivity"
             android:label="@string/title_activity_maps">
+
+        </activity>
+        <activity
+            android:name=".System.MapsActivityTest"
+            android:label="@string/title_activity_maps_test">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

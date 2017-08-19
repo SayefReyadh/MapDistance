@@ -1,7 +1,6 @@
 package com.example.sayefreyadh.mapdistance.System;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
@@ -13,25 +12,21 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.sayefreyadh.mapdistance.Models.Direction;
+import com.example.sayefreyadh.mapdistance.Models.MapDirection;
 import com.example.sayefreyadh.mapdistance.Models.Route;
 import com.example.sayefreyadh.mapdistance.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivityTest extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private AutoCompleteTextView startingLocationAutoCompleteTextView;
@@ -40,16 +35,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Button calculateButton;
     private TextView distanceTextView;
     private TextView timeTextView;
-
-    private List<Marker> originMarkers = new ArrayList<>();
-    private List<Marker> destinationMarkers = new ArrayList<>();
-    private List<Polyline> polylinePaths = new ArrayList<>();
-    private ProgressDialog progressDialog;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_map_test);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -69,7 +58,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 calculateDistanceBetweenPlaces();
             }
         });
-
     }
 
     private void calculateDistanceBetweenPlaces()
@@ -88,9 +76,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
         try {
+
+            MapDirection mapDirection = new MapDirection(startingLocationString , endingLocationString);
+            mapDirection.execute();
+            showPath(mapDirection.getRoutesBetweenPlace());
             //onDirectionFinderStart();
-            Direction direction = new Direction(this, startingLocationString, endingLocationString);
-            direction.execute();
+            ///Direction direction = new Direction(this, startingLocationString, endingLocationString);
+            ///direction.execute();
             //onDirectionFinderSuccess(direction.getRoutesBetweenPlace());
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -100,61 +92,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    public void onDirectionFinderStart() {
-        progressDialog = ProgressDialog.show(this, "Please wait.",
-                "Finding direction..!", true);
+    public void showPath(ArrayList<Route> routes)
+    {
+        for(Route route : routes)
+        {
+            distanceTextView.setText(route.distance.text);
+            timeTextView.setText(route.duration.text);
 
-        if (originMarkers != null) {
-            for (Marker marker : originMarkers) {
-                marker.remove();
-            }
-        }
+            ArrayList<LatLng> latlng = route.points;
+            PolylineOptions op = new PolylineOptions()
+                    .color(Color.BLUE)
+                    .width(10);
 
-        if (destinationMarkers != null) {
-            for (Marker marker : destinationMarkers) {
-                marker.remove();
+            ///the problem seems to be here while updating the map the app crashes
+            /// sayef last checked 19 - 8 - 17 2 : 40 PM
+            for(LatLng l : latlng)
+            {
+                op.add(l);
             }
-        }
 
-        if (polylinePaths != null) {
-            for (Polyline polyline:polylinePaths ) {
-                polyline.remove();
-            }
+            mMap.addPolyline(op);
         }
     }
-
-    public void onDirectionFinderSuccess(List<Route> routes) {
-        progressDialog.dismiss();
-        polylinePaths = new ArrayList<>();
-        originMarkers = new ArrayList<>();
-        destinationMarkers = new ArrayList<>();
-
-        for (Route route : routes) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
-            ((TextView) findViewById(R.id.timeTextView)).setText(route.duration.text);
-            ((TextView) findViewById(R.id.distanceTextView)).setText(route.distance.text);
-
-            originMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.start_blue))
-                    .title(route.startAddress)
-                    .position(route.startLocation)));
-            destinationMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.end_green))
-                    .title(route.endAddress)
-                    .position(route.endLocation)));
-
-            PolylineOptions polylineOptions = new PolylineOptions().
-                    geodesic(true).
-                    color(Color.BLUE).
-                    width(10);
-
-            for (int i = 0; i < route.points.size(); i++)
-                polylineOptions.add(route.points.get(i));
-
-            polylinePaths.add(mMap.addPolyline(polylineOptions));
-        }
-    }
-
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -169,11 +128,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        //LatLng sydney = new LatLng(-34, 151);
-        //mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
-
+        LatLng sydney = new LatLng(23.693800, 90.455241);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Sayef"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
