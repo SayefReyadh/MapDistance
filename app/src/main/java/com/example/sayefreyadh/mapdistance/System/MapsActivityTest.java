@@ -7,15 +7,17 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.sayefreyadh.mapdistance.IDistanceCalculatedListener;
 import com.example.sayefreyadh.mapdistance.Models.MapDirection;
 import com.example.sayefreyadh.mapdistance.Models.Route;
 import com.example.sayefreyadh.mapdistance.R;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -29,11 +31,17 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 public class MapsActivityTest extends FragmentActivity implements OnMapReadyCallback,
-        IDistanceCalculatedListener {
+        // for listening when the map is ready to update the route between source and destination
+        IDistanceCalculatedListener,
+        // for listening the destination location selected by user in google autocomplete place api
+        PlaceSelectionListener {
 
     private GoogleMap mMap;
-    private AutoCompleteTextView startingLocationAutoCompleteTextView;
-    private AutoCompleteTextView endingLocationAutoCompleteTextView;
+//    private AutoCompleteTextView startingLocationAutoCompleteTextView;
+//    private AutoCompleteTextView endingLocationAutoCompleteTextView;
+
+    //    latlng for user and destination
+    private LatLng sourceLocation, destinationLocation;
 
     private Button calculateButton;
     private TextView distanceTextView;
@@ -47,8 +55,11 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        startingLocationAutoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.startingLocationAutoCompleteTextView);
-        endingLocationAutoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.endingLocationAutoCompleteTextView);
+//        initializing the autocomplete place fragment
+        initPlaceAutoComplete();
+
+//        startingLocationAutoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.startingLocationAutoCompleteTextView);
+//        endingLocationAutoCompleteTextView = (AutoCompleteTextView) findViewById(R.id.endingLocationAutoCompleteTextView);
 
         calculateButton = (Button) findViewById(R.id.calculateButton);
 
@@ -61,38 +72,69 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
                 calculateDistanceBetweenPlaces();
             }
         });
+
+//        at first disabling the button so user can't request for destination before selecting a destination
+        calculateButton.setEnabled(false);
     }
 
-    private void calculateDistanceBetweenPlaces()
-    {
-        String startingLocationString = startingLocationAutoCompleteTextView.getText().toString();
-        String endingLocationString = endingLocationAutoCompleteTextView.getText().toString();
+    private void initPlaceAutoComplete() {
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.autocomplete_fragment);
+        autocompleteFragment.setHint("Search Destination");
 
-        if (startingLocationString.isEmpty()) {
-            Toast.makeText(this, "Please enter origin address!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (endingLocationString.isEmpty()) {
-            Toast.makeText(this, "Please enter destination address!", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Register a listener to receive callbacks when a place has been selected or an error has
+        // occurred.
+        autocompleteFragment.setOnPlaceSelectedListener(this);
+
+    }
 
 
+    /*
+        In this method we are going to calculate the distance and time between two location
+        The 1st location will be user's own locaiton
+        The 2nd will be the destination
+        Both of them are lat and lng
+
+     */
+    private void calculateDistanceBetweenPlaces() {
         try {
-
-            MapDirection mapDirection = new MapDirection(startingLocationString, endingLocationString, this);
-            mapDirection.execute();
-//            showPath(mapDirection.getRoutesBetweenPlace());
-            //onDirectionFinderStart();
-            ///Direction direction = new Direction(this, startingLocationString, endingLocationString);
-            ///direction.execute();
-            //onDirectionFinderSuccess(direction.getRoutesBetweenPlace());
+            new MapDirection(this, sourceLocation, destinationLocation)
+                    .executeLatLng();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-
-
     }
+
+//    private void calculateDistanceBetweenPlaces()
+//    {
+//        String startingLocationString = startingLocationAutoCompleteTextView.getText().toString();
+//        String endingLocationString = endingLocationAutoCompleteTextView.getText().toString();
+//
+//        if (startingLocationString.isEmpty()) {
+//            Toast.makeText(this, "Please enter origin address!", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//        if (endingLocationString.isEmpty()) {
+//            Toast.makeText(this, "Please enter destination address!", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//
+//        try {
+//
+//            MapDirection mapDirection = new MapDirection(startingLocationString, endingLocationString, this);
+//            mapDirection.execute();
+////            showPath(mapDirection.getRoutesBetweenPlace());
+//            //onDirectionFinderStart();
+//            ///Direction direction = new Direction(this, startingLocationString, endingLocationString);
+//            ///direction.execute();
+//            //onDirectionFinderSuccess(direction.getRoutesBetweenPlace());
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
+//
+//
+//    }
 
 
     public void showPath(ArrayList<Route> routes)
@@ -164,9 +206,9 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(23.693800, 90.455241);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Sayef"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney, 12f));
+        sourceLocation = new LatLng(23.693800, 90.455241);
+        mMap.addMarker(new MarkerOptions().position(sourceLocation).title("user source"));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sourceLocation, 12f));
 
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -179,21 +221,24 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        mMap.setMyLocationEnabled(true);
-        ArrayList<LatLng> latlng = new ArrayList<>();
-        latlng.add(new LatLng(23.693800, 90.455241));
-        latlng.add(new LatLng(23.693984, 90.455236));
-        latlng.add(new LatLng(23.694171, 90.455182));
-        PolylineOptions op = new PolylineOptions();
-        for(LatLng l : latlng)
-        {
-            op.add(l);
-        }
-        mMap.addPolyline(op);
     }
 
     @Override
     public void setLocationInMap(ArrayList<Route> routesBetweenPlace) {
         showPath(routesBetweenPlace);
+    }
+
+    @Override
+    public void onPlaceSelected(Place place) {
+        if (place != null) {
+            destinationLocation = place.getLatLng();
+
+            calculateButton.setEnabled(true);
+        }
+    }
+
+    @Override
+    public void onError(Status status) {
+
     }
 }

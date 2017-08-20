@@ -35,10 +35,20 @@ public class MapDirection {
     private String endingLocationString;
     private ArrayList<Route> routesBetweenPlace;
 
+
+    private LatLng startingLocation;
+    private LatLng endingLocation;
+
     public MapDirection(String startingLocationString, String endingLocationString, IDistanceCalculatedListener mListerner) {
         this.startingLocationString = startingLocationString;
         this.endingLocationString = endingLocationString;
         this.mListerner = mListerner;
+    }
+
+    public MapDirection(IDistanceCalculatedListener listerner, LatLng startingLocation, LatLng endingLocation) {
+        mListerner = listerner;
+        this.startingLocation = startingLocation;
+        this.endingLocation = endingLocation;
     }
 
     private String createUrl() throws UnsupportedEncodingException {
@@ -48,11 +58,29 @@ public class MapDirection {
         return DIRECTION_URL_API + "origin=" + urlStartingLocationString + "&destination=" + urlEndingLocationString + "&key=" + GOOGLE_API_KEY;
     }
 
+    private String createUrlLatLng() throws UnsupportedEncodingException {
+//        making the url with lat and lng data
+        String urlStartingLocationString = URLEncoder.encode(startingLocation.latitude + "," + startingLocation.longitude, "utf-8");
+        String urlEndingLocationString = URLEncoder.encode(endingLocation.latitude + "," + endingLocation.longitude, "utf-8");
+
+        return DIRECTION_URL_API + "origin=" + urlStartingLocationString + "&destination=" + urlEndingLocationString + "&key=" + GOOGLE_API_KEY;
+    }
+
     public void execute() throws UnsupportedEncodingException {
         //listener.onDirectionFinderStart();
         DownloadJSONData ob = new DownloadJSONData();
         ob.execute(createUrl());
         System.out.println("URL : " + createUrl());
+        System.out.println("TAGSJSON : " + ob.getJsonData());
+        ///json data is not coming???
+
+    }
+
+    public void executeLatLng() throws UnsupportedEncodingException {
+        //listener.onDirectionFinderStart();
+        DownloadJSONData ob = new DownloadJSONData();
+        ob.execute(createUrlLatLng());
+        System.out.println("URL : " + createUrlLatLng());
         System.out.println("TAGSJSON : " + ob.getJsonData());
         ///json data is not coming???
 

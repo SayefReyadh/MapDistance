@@ -1,80 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:weightSum="10"
-    >
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                 android:layout_width="match_parent"
+                                                 android:layout_height="match_parent"
+                                                 android:orientation="vertical"
+                                                 android:weightSum="10">
 
 
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/map"
+              android:name="com.google.android.gms.maps.SupportMapFragment"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_weight="2"
+              tools:context="com.example.sayefreyadh.mapdistance.System.MapsActivityTest"/>
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_medium"
+        android:layout_marginTop="@dimen/margin_medium">
+
+        <fragment
+            android:id="@+id/autocomplete_fragment"
+            android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </android.support.v7.widget.CardView>
 
     <LinearLayout
-        android:layout_weight="8"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_weight="8"
+        android:background="#fff"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <AutoCompleteTextView
-            android:id="@+id/startingLocationAutoCompleteTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:text="Rayerbag Bus Stop, Dhaka"
-            android:background="@android:color/transparent"
-            android:hint="Choose a starting point..." />
+        <!--<AutoCompleteTextView-->
+        <!--android:id="@+id/startingLocationAutoCompleteTextView"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginBottom="10dp"-->
+        <!--android:text="Rayerbag Bus Stop, Dhaka"-->
+        <!--android:background="@android:color/transparent"-->
+        <!--android:hint="Choose a starting point..." />-->
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="5dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginRight="50dp"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/dotted" />
+        <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="5dp"-->
+        <!--android:layout_marginBottom="5dp"-->
+        <!--android:layout_marginRight="50dp"-->
+        <!--android:layout_marginTop="5dp"-->
+        <!--android:background="@drawable/dotted" />-->
 
-        <AutoCompleteTextView
-            android:id="@+id/endingLocationAutoCompleteTextView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:text="Jatrabari Bus Stop, Shahid Faroque Rd, Dhaka"
-            android:hint="Choose a destination..." />
+        <!--<AutoCompleteTextView-->
+        <!--android:id="@+id/endingLocationAutoCompleteTextView"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:background="@android:color/transparent"-->
+        <!--android:text="Jatrabari Bus Stop, Shahid Faroque Rd, Dhaka"-->
+        <!--android:hint="Choose a destination..." />-->
 
         <LinearLayout
-            android:weightSum="3"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:weightSum="3">
             <Button
                 android:id="@+id/calculateButton"
-                android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:text="Calculate"
                 />
 
             <TextView
                 android:id="@+id/distanceTextView"
-                android:layout_weight="1"
-                android:text="@string/app_name"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/app_name"/>
             <TextView
                 android:id="@+id/timeTextView"
-                android:layout_weight="1"
-                android:text="@string/app_name"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/app_name"/>
         </LinearLayout>
     </LinearLayout>
 
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:map="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_weight="2"
-        android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="com.example.sayefreyadh.mapdistance.System.MapsActivityTest" />
-</LinearLayout>
+</android.support.design.widget.CoordinatorLayout>
 
 
