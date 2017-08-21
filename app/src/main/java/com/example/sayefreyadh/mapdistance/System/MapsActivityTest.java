@@ -180,7 +180,7 @@ public class MapsActivityTest extends FragmentActivity implements OnMapReadyCall
             mMap.addPolyline(op);
 
             mMap.addMarker(new MarkerOptions().position(latlng.get(0)).title("source position")
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher)));
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng.get(0), 12f));
 
 
