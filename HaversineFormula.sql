@@ -1,7 +1,7 @@
 SELECT * ,
 ACOS( SIN( RADIANS( latitude ) ) * SIN( RADIANS( 23 ) ) + COS( RADIANS( latitude ) )
 * COS( RADIANS( 23 )) * COS( RADIANS( longitude ) - RADIANS( 90 )) ) * 6380 AS distance
-FROM driver_location having distance ORDER BY distance;
+FROM driver_location having distance < 100 ORDER BY distance;
 
 
 SELECT * ,
