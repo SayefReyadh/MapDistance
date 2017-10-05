@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class DistanceCalculator {
     private final double Radius = 6371;
-    
+
     public double calculationByDistance(LatLng StartP, LatLng EndP) {
         double lat1 = StartP.latitude;
         double lat2 = EndP.latitude;
